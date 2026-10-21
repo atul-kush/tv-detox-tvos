@@ -37,7 +37,12 @@ final class Fetcher {
     private volatile boolean cancelled;
     private volatile HttpURLConnection open;
     private volatile int unsplashLeft = -1; // what Unsplash last said was left this hour; -1 not known
+    private volatile int added;             // pictures saved by the current run
+    private volatile boolean limited;       // the current run stopped at the hourly limit
     private Thread thread;
+
+    // The Get new pictures button's answer, once the run is over.
+    interface Done { void at(String summary); }
 
     Fetcher(Context c, Wallpapers walls) {
         context = c.getApplicationContext();
@@ -62,6 +67,28 @@ final class Fetcher {
         thread.start();
     }
 
+    // Get new pictures: fetch now for the ticked themes, whatever the time since the last fetch, still within
+    // the hourly limit. done is called on the main thread with what to tell the person.
+    void fetchNow(final Done done) {
+        final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
+        if (thread != null && thread.isAlive()) {
+            done.at("Already getting pictures");
+            return;
+        }
+        if (!online()) {
+            done.at(PictureRules.fetchSummary(0, true, false));
+            return;
+        }
+        cancelled = false;
+        thread = new Thread(() -> {
+            run();
+            final String summary = cancelled ? "Stopped" : PictureRules.fetchSummary(added, false, limited);
+            main.post(() -> done.at(summary));
+        }, "tvhome-fetch");
+        thread.setPriority(Thread.MIN_PRIORITY);
+        thread.start();
+    }
+
     // Home went to the background: stop now, the next visit tries again.
     void cancel() {
         if (thread == null || !thread.isAlive()) return;
@@ -82,6 +109,8 @@ final class Fetcher {
 
     private void run() {
         Log.i(TAG, "fetching new pictures");
+        added = 0;
+        limited = false;
         File dir = Wallpapers.cacheDir(context);
         dir.mkdirs();
         Set<String> known = new HashSet<>();
@@ -114,6 +143,7 @@ final class Fetcher {
             try {
                 if (!mayAskUnsplash()) {
                     Log.i(TAG, "unsplash: leaving the rest of this hour's requests alone");
+                    limited = true;
                     return;
                 }
                 String query = PictureRules.unsplashQuery(theme, day);
@@ -237,6 +267,7 @@ final class Fetcher {
                 out.write((kept.toTsv() + "\n").getBytes("UTF-8"));
             }
             Log.i(TAG, "fetched " + p.id);
+            added++;
             return true;
         } catch (Exception e) {
             part.delete();

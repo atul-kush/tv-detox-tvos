@@ -49,6 +49,10 @@ final class ControlCenter {
     private final Wallpapers walls;
     private final InputSource inputs;
     private final Runnable changeNow;
+    private final Fetch fetch;
+
+    // Get new pictures: fetch for the ticked themes now; done gets what to tell the person.
+    interface Fetch { void start(Fetcher.Done done); }
     private final int screenW;
     private View dim;
     private LinearLayout panel, body;
@@ -57,12 +61,13 @@ final class ControlCenter {
     private boolean showingInputs, showingWallpaper;
 
     // changeNow puts the next picture on screen (the home screen owns the picture's view).
-    ControlCenter(Activity a, FrameLayout overlayParent, Wallpapers w, InputSource inputs, Runnable changeNow) {
+    ControlCenter(Activity a, FrameLayout overlayParent, Wallpapers w, InputSource inputs, Runnable changeNow, Fetch fetch) {
         activity = a;
         parent = overlayParent;
         walls = w;
         this.inputs = inputs;
         this.changeNow = changeNow;
+        this.fetch = fetch;
         screenW = a.getResources().getDisplayMetrics().widthPixels;
     }
 
@@ -281,19 +286,33 @@ final class ControlCenter {
             body.addView(row, rl);
         }
 
-        final int everyAt = 1 + themes;
+        // Get new pictures: the ticked themes' pictures now, instead of waiting for the next automatic fetch.
+        final int getAt = 1 + themes, everyAt = 2 + themes;
+        final TextView[] result = new TextView[1];
+        View get = wideTile(Glyph.download(), Strings.t("Get new pictures"), Strings.t("For the ticked themes"), () -> {
+            result[0].setText(Strings.t("Getting pictures…"));
+            fetch.start(summary -> {
+                if (result[0].isAttachedToWindow()) result[0].setText(Strings.t(summary));
+            });
+        });
+        result[0] = (TextView) get.findViewWithTag("sub");
+        LinearLayout.LayoutParams gl = new LinearLayout.LayoutParams(-1, px(0.056f));
+        gl.topMargin = px(0.014f);
+        body.addView(get, gl);
+        rows.add(get);
+
         View every = wideTile(Glyph.clock(), Strings.t("Change picture"), Strings.t(PictureRules.everyLabel(walls.every())), () -> {
             walls.setEvery(PictureRules.nextEvery(walls.every()));
             showWallpaper(everyAt);
         });
         LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(-1, px(0.056f));
-        el.topMargin = px(0.014f);
+        el.topMargin = gap;
         body.addView(every, el);
         rows.add(every);
 
         // Change now sits above the right-hand column; the themes are a grid of two columns;
         // Change picture is below them.
-        View last = rows.get(everyAt);
+        View getTile = rows.get(getAt), last = rows.get(everyAt);
         links(rows.get(0), null, null, null, rows.get(Math.min(2, themes)));
         for (int i = 0; i < themes; i++) {
             View t = rows.get(1 + i);
@@ -301,10 +320,11 @@ final class ControlCenter {
             View l = left ? null : rows.get(i);
             View r = left && i + 1 < themes ? rows.get(2 + i) : null;
             View u = i < 2 ? rows.get(0) : rows.get(i - 1);
-            View d = i + 2 < themes ? rows.get(3 + i) : last;
+            View d = i + 2 < themes ? rows.get(3 + i) : getTile;
             links(t, l, r, u, d);
         }
-        links(last, null, null, rows.get(themes - (themes % 2 == 0 ? 1 : 0)), null);
+        links(getTile, null, null, rows.get(themes - (themes % 2 == 0 ? 1 : 0)), last);
+        links(last, null, null, getTile, null);
         rows.get(Math.max(0, Math.min(focus, rows.size() - 1))).requestFocus();
     }
 
@@ -480,6 +500,7 @@ final class ControlCenter {
         words.addView(head);
         TextView sub = text(0.011f, 0xB3FFFFFF, MainActivity.regular());
         sub.setText(status);
+        sub.setTag("sub");
         if (status == null) sub.setVisibility(View.GONE);
         sub.setSingleLine(true);
         sub.setEllipsize(android.text.TextUtils.TruncateAt.END);

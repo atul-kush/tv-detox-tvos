@@ -124,7 +124,7 @@ With a key, the tvOS-style home screen gets fresh landscapes, cities, space and 
 4. In this folder, copy `unsplash.key.example` to `unsplash.key` and replace its contents with your Access Key on one line. `unsplash.key` is in `.gitignore`, so it never gets committed.
 5. Run `sh build.sh`. It builds your key into the app on your TV, then `sh install.sh <TV_IP>`.
 
-**How much it uses:** about 12 requests a day, at most 20 in any hour, and it stops early if Unsplash says fewer than 10 are left. A new key allows 50 an hour. Change now never asks Unsplash; it cycles through pictures already on the TV. Each picture is credited to its photographer in Control Center.
+**How much it uses:** about 6 requests for each automatic fetch (every 12 hours, or hourly while the TV is short of new pictures), plus one each time a downloaded picture is first shown. The **Get new pictures** button in the Wallpaper panel fetches on demand, about 6 requests each press. The app never makes more than 45 requests in any hour, and it stops early if Unsplash says 5 or fewer are left; a new key allows 50 an hour. **Change now** never asks Unsplash; it cycles through pictures already on the TV. Each picture is credited to its photographer in Control Center.
 
 **Keep it private:** the built app (`out/tvhome.apk`) contains your key, so share this repo rather than your APK. If a key ever leaks, delete or regenerate it on Unsplash and rebuild.
 
@@ -431,6 +431,7 @@ Every app on the TV appears in the rows by itself, including new ones. Tools tha
 
 **tvOS-style:** press **Up** to the time pill, **OK**, then **Wallpaper**:
 - **Change now:** shows another picture straight away.
+- **Get new pictures:** downloads fresh pictures for the themes you've ticked, right now, instead of waiting for the next automatic fetch.
 - **Themes:** landscapes, cities, space, art, abstract and wildlife. At least one stays on, and daily downloads only fetch the themes you've ticked.
 - **Change picture:** every time the TV turns on, every 30 minutes, every hour, every 3 hours, once a day, or never.
 

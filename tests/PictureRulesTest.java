@@ -95,15 +95,24 @@ public class PictureRulesTest {
         Check.eq(chosen, PictureRules.withNewThemes(chosen, allSeen), "nothing new: unchanged");
         Check.eq("painting", PictureRules.unsplashQuery("art", 3), "art day 3");
 
-        // Unsplash budget: at most 20 requests in any hour, and stop when Unsplash says 10 or fewer are left
+        // Unsplash budget: at most 45 requests in any hour, and stop when Unsplash says 5 or fewer are left
+        Check.eq(45, PictureRules.UNSPLASH_PER_HOUR, "45 an hour");
         List<Long> times = new ArrayList<>();
-        for (int i = 0; i < 19; i++) times.add(t - 60_000L * i);
-        Check.yes(PictureRules.mayAskUnsplash(times, t, -1), "19 in the last hour");
+        for (int i = 0; i < 44; i++) times.add(t - 60_000L * i);
+        Check.yes(PictureRules.mayAskUnsplash(times, t, -1), "44 in the last hour");
         times.add(t - 1000);
-        Check.yes(!PictureRules.mayAskUnsplash(times, t, -1), "20 in the last hour");
-        Check.yes(PictureRules.mayAskUnsplash(times, t + 3_600_001L + 60_000L * 19, -1), "an hour later");
-        Check.yes(!PictureRules.mayAskUnsplash(new ArrayList<Long>(), t, 10), "10 left");
-        Check.yes(PictureRules.mayAskUnsplash(new ArrayList<Long>(), t, 11), "11 left");
+        Check.yes(!PictureRules.mayAskUnsplash(times, t, -1), "45 in the last hour");
+        Check.yes(PictureRules.mayAskUnsplash(times, t + 3_600_001L + 60_000L * 44, -1), "an hour later");
+        Check.yes(!PictureRules.mayAskUnsplash(new ArrayList<Long>(), t, 5), "5 left");
+        Check.yes(PictureRules.mayAskUnsplash(new ArrayList<Long>(), t, 6), "6 left");
+
+        // what the Get new pictures button says afterwards
+        Check.eq("3 new pictures added", PictureRules.fetchSummary(3, false, false), "some added");
+        Check.eq("1 new picture added", PictureRules.fetchSummary(1, false, false), "one added");
+        Check.eq("No new pictures", PictureRules.fetchSummary(0, false, false), "none added");
+        Check.eq("Offline", PictureRules.fetchSummary(0, true, false), "offline");
+        Check.eq("Hourly limit reached, try later", PictureRules.fetchSummary(0, false, true), "limit, none added");
+        Check.eq("4 new pictures added", PictureRules.fetchSummary(4, false, true), "limit after some added");
         Check.eq(Arrays.asList(t), PictureRules.lastHour(Arrays.asList(t - 3_600_000L, t), t), "only the last hour kept");
 
         Check.yes(!PictureRules.shouldFetch(t, t + 43_199_999, 60, 6), "plenty downloaded, under twelve hours");

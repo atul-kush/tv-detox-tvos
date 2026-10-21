@@ -104,13 +104,20 @@ final class PictureRules {
         return out;
     }
 
-    // Unsplash's free key allows 50 requests an hour. Stay far below it: at most 20 of our own in any
-    // hour, and none once Unsplash says 10 or fewer are left (remaining < 0: not known yet).
-    static final int UNSPLASH_PER_HOUR = 20, UNSPLASH_KEEP_FREE = 10;
+    // Unsplash's free key allows 50 requests an hour. Stay under it: at most 45 of our own in any
+    // hour, and none once Unsplash says 5 or fewer are left (remaining < 0: not known yet).
+    static final int UNSPLASH_PER_HOUR = 45, UNSPLASH_KEEP_FREE = 5;
 
     static boolean mayAskUnsplash(List<Long> requestTimes, long now, int remaining) {
         if (remaining >= 0 && remaining <= UNSPLASH_KEEP_FREE) return false;
         return lastHour(requestTimes, now).size() < UNSPLASH_PER_HOUR;
+    }
+
+    // What the Get new pictures button says when it's done.
+    static String fetchSummary(int added, boolean offline, boolean limited) {
+        if (offline) return "Offline";
+        if (added > 0) return added == 1 ? "1 new picture added" : added + " new pictures added";
+        return limited ? "Hourly limit reached, try later" : "No new pictures";
     }
 
     static List<Long> lastHour(List<Long> times, long now) {

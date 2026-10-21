@@ -179,7 +179,7 @@ public class MainActivity extends Activity {
             @Override public List<TvInputInfo> list() { return hdmiInputs(); }
             @Override public String label(TvInputInfo i) { return inputLabel(i); }
             @Override public void open(String id) { openInput(id); }
-        }, () -> applyPicture(walls.changeNow()));
+        }, () -> applyPicture(walls.changeNow()), done -> fetcher.fetchNow(done));
         registerReceiver(screenOff, new IntentFilter(Intent.ACTION_SCREEN_OFF));
         IntentFilter f = new IntentFilter();
         f.addAction(Intent.ACTION_PACKAGE_ADDED);

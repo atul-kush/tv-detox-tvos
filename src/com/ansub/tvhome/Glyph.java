@@ -12,7 +12,7 @@ import android.graphics.drawable.Drawable;
 // setTint recolours them (dark on a focused white tile).
 final class Glyph extends Drawable {
     private static final int WIFI = 0, ETHERNET = 1, OFFLINE = 2, GEAR = 3, ACCOUNT = 4, BLUETOOTH = 5,
-            AUDIO = 6, HDMI = 7, PLAY = 8, PLUS = 9, PICTURE = 10, REFRESH = 11, CHECK = 12, EMPTY = 13, CLOCK = 14;
+            AUDIO = 6, HDMI = 7, PLAY = 8, PLUS = 9, PICTURE = 10, REFRESH = 11, CHECK = 12, EMPTY = 13, CLOCK = 14, DOWNLOAD = 15;
     private static final int DIM = 0x47;
 
     static Drawable wifi(int level) { return new Glyph(WIFI, Math.max(1, Math.min(3, level))); }
@@ -28,6 +28,7 @@ final class Glyph extends Drawable {
     static Drawable picture() { return new Glyph(PICTURE, 0); }
     static Drawable refresh() { return new Glyph(REFRESH, 0); }
     static Drawable clock() { return new Glyph(CLOCK, 0); }
+    static Drawable download() { return new Glyph(DOWNLOAD, 0); }
     // A ticked or empty round box, for choices that can be on or off.
     static Drawable check(boolean on) { return new Glyph(on ? CHECK : EMPTY, 0); }
 
@@ -136,6 +137,17 @@ final class Glyph extends Drawable {
                 c.drawCircle(12, 12, 8.5f, line);
                 c.drawLine(12, 12, 12, 7, line);
                 c.drawLine(12, 12, 15.5f, 14, line);
+                break;
+            case DOWNLOAD:
+                // An arrow down into a tray: "bring some in".
+                stroke(c, 2.2f, 255);
+                c.drawLine(12, 4, 12, 15, line);
+                path.reset();
+                path.moveTo(7.5f, 10.5f); path.lineTo(12, 15); path.lineTo(16.5f, 10.5f);
+                c.drawPath(path, line);
+                path.reset();
+                path.moveTo(5, 15.5f); path.lineTo(5, 19); path.lineTo(19, 19); path.lineTo(19, 15.5f);
+                c.drawPath(path, line);
                 break;
             case EMPTY:
                 stroke(c, 1.8f, 0x99);
