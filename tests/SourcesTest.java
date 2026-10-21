@@ -93,6 +93,15 @@ public class SourcesTest {
         Check.yes(Sources.parseUnsplash("{\"errors\":[\"OAuth error\"]}", "art", 1280, 720).isEmpty(), "unsplash error reply");
         Check.yes(Sources.parseUnsplash("<html>", "art", 1280, 720).isEmpty(), "unsplash garbage");
 
+        // unsplashParsesIllustrations (search results: the {"results": [...]} shape)
+        List<Sources.Found> found = Sources.parseUnsplash(fixture("unsplash-illustrations.json"), "abstract", 1280, 720);
+        Check.eq(20, found.size(), "illustration results");
+        Check.eq("us:MQOsokZW2Mw", found.get(0).picture.id, "illustration id");
+        Check.eq("Abstract swirling patterns in shades of blue", found.get(0).picture.title, "illustration title");
+        Check.eq("abstract", found.get(0).picture.category, "illustration category");
+        Check.eq("https://api.unsplash.com/search/illustrations?query=abstract+background&orientation=landscape&content_filter=high&page=3&per_page=2",
+                Sources.unsplashIllustrationsUrl("abstract background", 3, 2), "illustrations url");
+
         // unsplashUrl
         Check.eq("https://api.unsplash.com/photos/random?query=city+skyline&orientation=landscape&content_filter=high&count=2",
                 Sources.unsplashUrl("city skyline", 2), "unsplash url");

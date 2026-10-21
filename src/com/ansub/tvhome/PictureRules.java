@@ -21,8 +21,8 @@ final class PictureRules {
     static final long DEFAULT_EVERY = 3_600_000L;
 
     // Picture themes, as Picture.category values, and how they're named on screen.
-    static final String[] THEMES = {"landscapes", "cities", "space", "art"};
-    private static final String[] THEME_LABELS = {"Landscapes", "Cities", "Space", "Art"};
+    static final String[] THEMES = {"landscapes", "cities", "space", "art", "abstract", "wildlife"};
+    private static final String[] THEME_LABELS = {"Landscapes", "Cities", "Space", "Art", "Abstract", "Wildlife"};
 
     private PictureRules() {}
 
@@ -83,8 +83,23 @@ final class PictureRules {
             case "landscapes": return "landscape nature";
             case "cities": return "city skyline";
             case "space": return "galaxy nebula stars";
+            case "abstract": return "abstract background";
+            case "wildlife": return "wildlife animals";
             default: return day % 3 == 2 ? "abstract art" : "painting";
         }
+    }
+
+    // Abstract backgrounds come from Unsplash's illustrations (swirls, flowing lines, colour waves),
+    // which are searched separately from photos; every other theme is photos.
+    static boolean unsplashIllustrations(String theme) {
+        return theme.equals("abstract");
+    }
+
+    // Themes added in an update start ticked, once. A theme the person has seen and switched off stays off.
+    static Set<String> withNewThemes(Set<String> chosen, Set<String> seen) {
+        Set<String> out = new LinkedHashSet<>(chosen);
+        for (String t : THEMES) if (!seen.contains(t)) out.add(t);
+        return out;
     }
 
     // Unsplash's free key allows 50 requests an hour. Stay far below it: at most 20 of our own in any

@@ -4,8 +4,8 @@
   python3 -I tools/walls.py fetch tools/walls-picks.tsv
 
 candidates prints pictures that fit the screen, with the ref to put in a picks file.
-fetch reads lines of  category<TAB>source<TAB>ref  (source: wikimedia, met or nasa; ref: a Commons
-page id, a Met object id or a NASA id), downloads each, shrinks it to 1280 px on its longest side into assets/walls/ and
+fetch reads lines of  category<TAB>source<TAB>ref  (source: wikimedia, met, nasa or unsplash; ref: a
+Commons page id, a Met object id, a NASA id or an Unsplash photo id; unsplash needs your key in unsplash.key), downloads each, shrinks it to 1280 px on its longest side into assets/walls/ and
 writes assets/walls/index.tsv in the Picture.toTsv format the app reads.
 """
 import json
@@ -19,7 +19,18 @@ import urllib.request
 UA = "tvhome/1.5 (Android TV home screen; https://github.com/Ansub/tv-detox)"
 CATS = {"landscapes": "Featured_pictures_of_landscapes", "cities": "Featured_pictures_of_cityscapes",
         "space": "Featured_pictures_of_astronomy"}
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "walls")
+OUT = os.environ.get("WALLS_OUT") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "walls")
+KEY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "unsplash.key")
+# File name prefix per theme: l01.jpg, c01.jpg, ...
+PREFIX = {"landscapes": "l", "cities": "c", "space": "s", "art": "a", "abstract": "x", "wildlife": "w"}
+
+
+def unsplash(url):
+    key = open(KEY_FILE).read().strip()
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Authorization": "Client-ID " + key,
+                                               "Accept-Version": "v1"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
 
 
 def get(url):
@@ -97,7 +108,7 @@ def fetch(picks):
             continue
         cat, source, ref = line.split("\t")[:3]
         counts[cat] = counts.get(cat, 0) + 1
-        name = f"{cat[0]}{counts[cat]:02d}.jpg"
+        name = f"{PREFIX[cat]}{counts[cat]:02d}.jpg"
         if source == "wikimedia":
             page = next(iter(wiki_info({"pageids": ref})))
             ii, lic, title, author = wiki_fields(page)
@@ -106,6 +117,15 @@ def fetch(picks):
             o = json.loads(get(f"https://collectionapi.metmuseum.org/public/collection/v1/objects/{ref}"))
             url, title, author, lic = o["primaryImage"] or o["primaryImageSmall"], plain(o["title"]), plain(o.get("artistDisplayName", "")), "Public domain"
             art, src, pid = True, "The Met", "met:" + ref
+        elif source == "unsplash":
+            # Unsplash crops it to the screen for us; the Unsplash License allows bundling. Unsplash
+            # asks to be told when a photo is used, so ping its download link too.
+            p = unsplash(f"https://api.unsplash.com/photos/{urllib.parse.quote(ref)}")
+            url = p["urls"]["raw"] + "&w=1280&h=720&fit=crop&crop=entropy&q=80&fm=jpg"
+            alt = p.get("alt_description") or p.get("description") or "Untitled"
+            title, author, lic = plain(alt[0].upper() + alt[1:]), plain(p["user"]["name"]), "Unsplash License"
+            art, src, pid = False, "Unsplash", "us:" + ref
+            unsplash(p["links"]["download_location"])
         else:
             meta = json.loads(get(f"https://images-api.nasa.gov/search?nasa_id={urllib.parse.quote(ref)}"))
             d = meta["collection"]["items"][0]["data"][0]

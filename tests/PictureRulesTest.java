@@ -79,6 +79,20 @@ public class PictureRulesTest {
         Check.eq("painting", PictureRules.unsplashQuery("art", 0), "art day 0");
         Check.eq("painting", PictureRules.unsplashQuery("art", 1), "art day 1");
         Check.eq("abstract art", PictureRules.unsplashQuery("art", 2), "art day 2");
+        Check.eq("abstract background", PictureRules.unsplashQuery("abstract", 0), "abstract query");
+        Check.eq("wildlife animals", PictureRules.unsplashQuery("wildlife", 0), "wildlife query");
+        Check.yes(PictureRules.unsplashIllustrations("abstract") && !PictureRules.unsplashIllustrations("space"), "abstract uses illustrations");
+
+        // six themes now, the two new ones last
+        Check.eq(Arrays.asList("landscapes", "cities", "space", "art", "abstract", "wildlife"), Arrays.asList(PictureRules.THEMES), "themes");
+        Check.eq("Wildlife", PictureRules.themeLabel("wildlife"), "wildlife label");
+        Check.eq("Abstract", PictureRules.themeLabel("abstract"), "abstract label");
+        // themes added in an update start ticked, once; one the person switched off stays off
+        Set<String> seen = new HashSet<>(Arrays.asList("landscapes", "cities", "space", "art"));
+        Set<String> chosen = new HashSet<>(Arrays.asList("cities", "space"));
+        Check.eq(new HashSet<>(Arrays.asList("cities", "space", "abstract", "wildlife")), PictureRules.withNewThemes(chosen, seen), "new themes on");
+        Set<String> allSeen = new HashSet<>(Arrays.asList(PictureRules.THEMES));
+        Check.eq(chosen, PictureRules.withNewThemes(chosen, allSeen), "nothing new: unchanged");
         Check.eq("painting", PictureRules.unsplashQuery("art", 3), "art day 3");
 
         // Unsplash budget: at most 20 requests in any hour, and stop when Unsplash says 10 or fewer are left

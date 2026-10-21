@@ -25,7 +25,7 @@ Based on [Ansub/tv-detox](https://github.com/Ansub/tv-detox) (MIT). The cleanup 
 | | **Basic** | **tvOS-style** |
 |---|---|---|
 | Look | Your apps, your HDMI inputs and a clock on a calm gradient | A full-screen wallpaper, a glass dock of six apps, every other app below, and a Control Center |
-| Wallpaper | 14 colour gradients | Landscapes, cities, space and art: 40 built in, plus fresh ones daily from Unsplash (or Wikimedia Commons and The Met) |
+| Wallpaper | 14 colour gradients | Landscapes, cities, space, art, abstract illustrations and wildlife: 50 built in, plus fresh ones daily from Unsplash (or Wikimedia Commons and The Met) |
 | Install | Downloads a ready-made release, nothing to build | Built on your computer from this repo (needs Java and the Android SDK; the AI does it for you) |
 | Memory | about 18 MB | about 21–26 MB (measured on a 1 GB OnePlus TV) |
 
@@ -38,7 +38,7 @@ Based on [Ansub/tv-detox](https://github.com/Ansub/tv-detox) (MIT). The cleanup 
 | | |
 |---|---|
 | <img src="docs/tvos/1-home.jpg" alt="Home"><br>**Home.** A full-screen picture, your six favourite apps on a glass dock, and the time and account in the top-right. | <img src="docs/tvos/2-all-apps.jpg" alt="All apps"><br>**All apps.** Press Down: every app on the TV, with the focused one's name underneath. New apps show up on their own. |
-| <img src="docs/tvos/4-control-center.jpg" alt="Control Center"><br>**Control Center.** Press Up and OK: Settings, Inputs, Wallpaper, Wi-Fi and Bluetooth, and who took the picture. | <img src="docs/tvos/6-wallpaper.jpg" alt="Wallpaper options"><br>**Wallpaper.** Change now, pick your themes, and choose how often it changes. |
+| <img src="docs/tvos/4-control-center.jpg" alt="Control Center"><br>**Control Center.** Press Up and OK: Settings, Inputs, Wallpaper, Wi-Fi and Bluetooth, and who took the picture. | <img src="docs/tvos/6-wallpaper.jpg" alt="Wallpaper options"><br>**Wallpaper.** Change now, pick your themes (six to choose from), and choose how often it changes. |
 | <img src="docs/tvos/5-inputs.jpg" alt="Inputs"><br>**Inputs.** Your HDMI devices by the names you gave them; unplugged ones are dimmed. | <img src="docs/tvos/7-app-menu.jpg" alt="App menu"><br>**Arrange apps.** Hold OK: move an app (the others slide over), pin it to the dock, take it off the dock or off the home screen. |
 
 More in the tvOS-style one:
@@ -431,7 +431,7 @@ Every app on the TV appears in the rows by itself, including new ones. Tools tha
 
 **tvOS-style:** press **Up** to the time pill, **OK**, then **Wallpaper**:
 - **Change now:** shows another picture straight away.
-- **Themes:** landscapes, cities, space and art. At least one stays on, and daily downloads only fetch the themes you've ticked.
+- **Themes:** landscapes, cities, space, art, abstract and wildlife. At least one stays on, and daily downloads only fetch the themes you've ticked.
 - **Change picture:** every time the TV turns on, every 30 minutes, every hour, every 3 hours, once a day, or never.
 
 The credit for the picture on screen is at the bottom of Control Center.

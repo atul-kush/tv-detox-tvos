@@ -226,41 +226,45 @@ final class ControlCenter {
         links(bt, wifi, null, wallpaperTile, null);
     }
 
-    // Wallpaper options: Change now, the themes to pick from, and how often the picture changes.
-    // focus says which row gets focus: 0 Change now, 1-4 the themes, 5 Change picture.
+    // Wallpaper options: Change now (top right, next to the title), the themes in rows of two, and
+    // how often the picture changes. focus says which gets focus: 0 Change now, 1.. the themes,
+    // then Change picture.
     private void showWallpaper(int focus) {
         showingWallpaper = true;
         body.removeAllViews();
-        TextView title = text(0.022f, Color.WHITE, MainActivity.semibold());
-        title.setText(Strings.t("Wallpaper"));
-        body.addView(title);
-        TextView sub = text(0.0115f, 0xB3FFFFFF, MainActivity.regular());
-        sub.setText(Strings.t("Choose themes and how often it changes"));
-        body.addView(sub);
-
-        int gap = px(0.011f), rowH = px(0.05f);
+        int gap = px(0.011f), rowH = px(0.046f);
         int inner = px(0.36f) - 2 * px(0.018f), half = (inner - gap) / 2;
         List<View> rows = new ArrayList<>();
+
+        LinearLayout head = new LinearLayout(activity);
+        head.setOrientation(LinearLayout.HORIZONTAL);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        head.setClipChildren(false);
+        LinearLayout words = new LinearLayout(activity);
+        words.setOrientation(LinearLayout.VERTICAL);
+        TextView title = text(0.022f, Color.WHITE, MainActivity.semibold());
+        title.setText(Strings.t("Wallpaper"));
+        words.addView(title);
+        TextView sub = text(0.0105f, 0xB3FFFFFF, MainActivity.regular());
+        sub.setText(Strings.t("Themes and how often it changes"));
+        words.addView(sub);
+        head.addView(words, new LinearLayout.LayoutParams(0, -2, 1f));
         View now = wideTile(Glyph.refresh(), Strings.t("Change now"), null, () -> {
             changeNow.run();
             refreshCredit();
         });
-        LinearLayout.LayoutParams nl = new LinearLayout.LayoutParams(-1, rowH);
-        nl.topMargin = px(0.014f);
-        body.addView(now, nl);
+        now.setPadding(px(0.01f), 0, px(0.008f), 0);
+        head.addView(now, new LinearLayout.LayoutParams(px(0.15f), px(0.042f)));
+        body.addView(head);
         rows.add(now);
 
-        TextView label = text(0.0105f, 0xB3FFFFFF, MainActivity.semibold());
-        label.setText(Strings.t("Themes"));
-        LinearLayout.LayoutParams ll = new LinearLayout.LayoutParams(-2, -2);
-        ll.topMargin = px(0.012f);
-        body.addView(label, ll);
         final java.util.Set<String> chosen = walls.themes();
-        for (int r = 0; r < 2; r++) {
+        final int themes = PictureRules.THEMES.length;
+        for (int r = 0; r * 2 < themes; r++) {
             LinearLayout row = new LinearLayout(activity);
             row.setOrientation(LinearLayout.HORIZONTAL);
             row.setClipChildren(false);
-            for (int c = 0; c < 2; c++) {
+            for (int c = 0; c < 2 && r * 2 + c < themes; c++) {
                 final int index = 1 + r * 2 + c;
                 final String theme = PictureRules.THEMES[index - 1];
                 View t = wideTile(Glyph.check(chosen.contains(theme)), Strings.t(PictureRules.themeLabel(theme)), null, () -> {
@@ -273,26 +277,34 @@ final class ControlCenter {
                 rows.add(t);
             }
             LinearLayout.LayoutParams rl = new LinearLayout.LayoutParams(-1, -2);
-            rl.topMargin = r == 0 ? px(0.006f) : gap;
+            rl.topMargin = r == 0 ? px(0.016f) : gap;
             body.addView(row, rl);
         }
 
+        final int everyAt = 1 + themes;
         View every = wideTile(Glyph.clock(), Strings.t("Change picture"), Strings.t(PictureRules.everyLabel(walls.every())), () -> {
             walls.setEvery(PictureRules.nextEvery(walls.every()));
-            showWallpaper(5);
+            showWallpaper(everyAt);
         });
-        LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(-1, px(0.06f));
+        LinearLayout.LayoutParams el = new LinearLayout.LayoutParams(-1, px(0.056f));
         el.topMargin = px(0.014f);
         body.addView(every, el);
         rows.add(every);
 
-        // Change now, then the 2x2 themes, then Change picture.
-        links(rows.get(0), null, null, null, rows.get(1));
-        links(rows.get(1), null, rows.get(2), rows.get(0), rows.get(3));
-        links(rows.get(2), rows.get(1), null, rows.get(0), rows.get(4));
-        links(rows.get(3), null, rows.get(4), rows.get(1), rows.get(5));
-        links(rows.get(4), rows.get(3), null, rows.get(2), rows.get(5));
-        links(rows.get(5), null, null, rows.get(3), null);
+        // Change now sits above the right-hand column; the themes are a grid of two columns;
+        // Change picture is below them.
+        View last = rows.get(everyAt);
+        links(rows.get(0), null, null, null, rows.get(Math.min(2, themes)));
+        for (int i = 0; i < themes; i++) {
+            View t = rows.get(1 + i);
+            boolean left = i % 2 == 0;
+            View l = left ? null : rows.get(i);
+            View r = left && i + 1 < themes ? rows.get(2 + i) : null;
+            View u = i < 2 ? rows.get(0) : rows.get(i - 1);
+            View d = i + 2 < themes ? rows.get(3 + i) : last;
+            links(t, l, r, u, d);
+        }
+        links(last, null, null, rows.get(themes - (themes % 2 == 0 ? 1 : 0)), null);
         rows.get(Math.max(0, Math.min(focus, rows.size() - 1))).requestFocus();
     }
 

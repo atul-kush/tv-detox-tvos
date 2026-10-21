@@ -112,8 +112,11 @@ final class Fetcher {
                     Log.i(TAG, "unsplash: leaving the rest of this hour's requests alone");
                     return;
                 }
-                List<Sources.Found> found = Sources.parseUnsplash(unsplash(Sources.unsplashUrl(
-                        PictureRules.unsplashQuery(theme, day), 2)), theme, w, h);
+                String query = PictureRules.unsplashQuery(theme, day);
+                // Illustrations are searched, a different page of the matches each day so they don't repeat.
+                String url = PictureRules.unsplashIllustrations(theme)
+                        ? Sources.unsplashIllustrationsUrl(query, 1 + random.nextInt(40), 2) : Sources.unsplashUrl(query, 2);
+                List<Sources.Found> found = Sources.parseUnsplash(unsplash(url), theme, w, h);
                 for (Sources.Found f : found) {
                     if (cancelled || known.contains(f.picture.id) || !save(f.picture, dir)) continue;
                     known.add(f.picture.id);

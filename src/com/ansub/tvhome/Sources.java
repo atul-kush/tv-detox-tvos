@@ -71,12 +71,23 @@ final class Sources {
         }
     }
 
-    // Photos from /photos/random, each cropped by Unsplash to exactly w x h (zoomed to fill, keeping the
+    // Unsplash's illustrations (not photos), searched one page at a time.
+    static String unsplashIllustrationsUrl(String query, int page, int perPage) {
+        try {
+            return "https://api.unsplash.com/search/illustrations?query=" + URLEncoder.encode(query, "UTF-8")
+                    + "&orientation=landscape&content_filter=high&page=" + page + "&per_page=" + perPage;
+        } catch (UnsupportedEncodingException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    // Photos from /photos/random or /search/photos ({"results": [...]}), each cropped by Unsplash to exactly w x h (zoomed to fill, keeping the
     // busiest part), so the TV downloads a ready-made screen-sized picture.
     static List<Found> parseUnsplash(String json, String category, int w, int h) {
         List<Found> out = new ArrayList<>();
         try {
-            JSONArray photos = new JSONArray(json);
+            String trimmed = json.trim();
+            JSONArray photos = trimmed.startsWith("{") ? new JSONObject(trimmed).getJSONArray("results") : new JSONArray(trimmed);
             for (int i = 0; i < photos.length(); i++) {
                 JSONObject p = photos.getJSONObject(i);
                 String raw = p.getJSONObject("urls").optString("raw", "");

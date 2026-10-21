@@ -51,13 +51,20 @@ final class Wallpapers {
     }
 
     // The themes picked in Control Center (all of them until someone changes it).
+    // Themes added in an update (like Abstract and Wildlife) are switched on once for people who had
+    // already picked their themes; one they then switch off stays off.
     Set<String> themes() {
         String saved = prefs.getString("themes", null);
-        return new java.util.LinkedHashSet<>(saved == null ? Arrays.asList(PictureRules.THEMES) : csv(saved));
+        if (saved == null) return new java.util.LinkedHashSet<>(Arrays.asList(PictureRules.THEMES));
+        Set<String> seen = new HashSet<>(csv(prefs.getString("themesSeen", "landscapes,cities,space,art")));
+        Set<String> themes = PictureRules.withNewThemes(new java.util.LinkedHashSet<>(csv(saved)), seen);
+        if (seen.size() < PictureRules.THEMES.length) setThemes(themes);
+        return themes;
     }
 
     void setThemes(Set<String> themes) {
-        prefs.edit().putString("themes", TextUtils.join(",", themes)).apply();
+        prefs.edit().putString("themes", TextUtils.join(",", themes))
+                .putString("themesSeen", TextUtils.join(",", PictureRules.THEMES)).apply();
     }
 
     // How often the picture changes, one of PictureRules.EVERY.
