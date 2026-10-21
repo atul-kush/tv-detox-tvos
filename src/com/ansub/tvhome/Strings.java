@@ -12,6 +12,13 @@ final class Strings {
         "Settings", "Add app", "Network", "Offline", "Sound", "Picture",
         "Move", "Replace", "Remove from home", "Uninstall", "App info",
         "Use the arrows to move it, then press OK", "Every app is already here", "Add an app", "Replace %s", "Wallpaper", "TV settings",
+        // Added for the tvOS-style layout; not translated yet, so they show in English everywhere.
+        "Pin to dock", "Remove from dock", "Dock is full. Use Move to swap an app in.", "Inputs", "Audio", "Wi-Fi",
+        "Bluetooth", "Connected", "Not connected", "Account", "Choose what to watch", "Nothing connected", "On", "Off",
+        "TV speakers", "Ethernet",
+        "Change now", "Themes", "Change picture", "Choose themes and how often it changes",
+        "Landscapes", "Cities", "Space", "Art", "All themes", "Every time the TV turns on",
+        "Every 30 minutes", "Every hour", "Every 3 hours", "Once a day", "Never (keep this one)",
     };
 
     // Keyed by language ("de"), or language-country ("zh-TW") where a country writes it differently.

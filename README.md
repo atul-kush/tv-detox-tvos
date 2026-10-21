@@ -1,50 +1,59 @@
 <div align="center">
 
-# TV Detox
+# TV Detox · tvOS Edition
 
-<a href="https://www.skool.com/staffed-claude-code-ai-5304"><img src="https://img.shields.io/badge/Join_the_community_%E2%86%92-FFD400?style=for-the-badge" alt="Join the community" width="340"></a>
-
-### Make an old, slow Android TV fast again.
+### Make an old, slow Android TV fast again, and give it an Apple TV–style home screen.
 
 Claude Code or Codex does the work. You just press OK on the remote.
 
-[![Release](https://img.shields.io/github/v/release/Ansub/tv-detox?color=black)](https://github.com/Ansub/tv-detox/releases/latest)
-[![Tests](https://img.shields.io/github/actions/workflow/status/Ansub/tv-detox/build.yml?branch=main&label=tests)](https://github.com/Ansub/tv-detox/actions)
-[![License](https://img.shields.io/badge/license-MIT-black)](LICENSE)
-[![YouTube](https://img.shields.io/badge/YouTube-@ansubkhan-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/@ansubkhan)
-
-**As seen on**
-
-[![The Verge](https://img.shields.io/badge/The_Verge-5200FF?style=for-the-badge)](https://www.theverge.com/ai-artificial-intelligence/1013505/maybe-claude-make-your-android-tv-less-crappy-too)
-[![Android Authority](https://img.shields.io/badge/Android_Authority-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://www.androidauthority.com/android-tv-vibe-hacking-remove-ads-bloatware-3725338/)
-[![Mashable](https://img.shields.io/badge/Mashable-00AEEF?style=for-the-badge)](https://mashable.com/tech/smart-tv-ads-claude-code-ai-cleanup)
-[![t3n](https://img.shields.io/badge/t3n-E6007E?style=for-the-badge)](https://t3n.de/news/claude-alter-fernseher-android-tv-1768831/)
-
-<img src="docs/home-screen.png" alt="The TV Detox home screen" width="100%">
+<img src="docs/tvos/1-home.jpg" alt="The tvOS-style home screen" width="100%">
 
 </div>
+
+Based on [Ansub/tv-detox](https://github.com/Ansub/tv-detox) (MIT). The cleanup and the basic home screen come from there. This edition adds a second home screen, styled after Apple's tvOS, which you build yourself.
 
 <table>
 <tr>
 <td width="33%" valign="top"><b>🧹 Removes the junk</b><br>Bloatware, ads and sponsored rows, gone.</td>
-<td width="33%" valign="top"><b>📺 A calm home screen</b><br>Your apps, your HDMI inputs and a clock. Nothing else.</td>
+<td width="33%" valign="top"><b>📺 Two home screens</b><br>A calm basic one, or a tvOS-style one with changing wallpapers.</td>
 <td width="33%" valign="top"><b>↩️ Undo anytime</b><br>Apps are turned off, never deleted.</td>
 </tr>
 </table>
 
-## Watch it work
+## Pick a home screen
 
-<a href="https://www.youtube.com/watch?v=fP2SGGVsaB0"><img src="https://img.youtube.com/vi/fP2SGGVsaB0/maxresdefault.jpg" alt="Watch: Claude Made My Old Android TV Feel Brand New" width="100%"></a>
+| | **Basic** | **tvOS-style** |
+|---|---|---|
+| Look | Your apps, your HDMI inputs and a clock on a calm gradient | A full-screen wallpaper, a glass dock of six apps, every other app below, and a Control Center |
+| Wallpaper | 14 colour gradients | Landscapes, cities, space and art: 40 built in, plus fresh ones daily from Unsplash (or Wikimedia Commons and The Met) |
+| Install | Downloads a ready-made release, nothing to build | Built on your computer from this repo (needs Java and the Android SDK; the AI does it for you) |
+| Memory | about 18 MB | about 21–26 MB (measured on a 1 GB OnePlus TV) |
 
-**[▶ Claude Made My Old Android TV Feel Brand New](https://www.youtube.com/watch?v=fP2SGGVsaB0)** · the full setup on a real TV, in 4 minutes.
+**Basic**
+
+<img src="docs/home-screen.png" alt="The basic home screen" width="100%">
+
+**tvOS-style**
+
+| | |
+|---|---|
+| <img src="docs/tvos/1-home.jpg" alt="Home"><br>**Home.** A full-screen picture, your six favourite apps on a glass dock, and the time and account in the top-right. | <img src="docs/tvos/2-all-apps.jpg" alt="All apps"><br>**All apps.** Press Down: every app on the TV, with the focused one's name underneath. New apps show up on their own. |
+| <img src="docs/tvos/4-control-center.jpg" alt="Control Center"><br>**Control Center.** Press Up and OK: Settings, Inputs, Wallpaper, Wi-Fi and Bluetooth, and who took the picture. | <img src="docs/tvos/6-wallpaper.jpg" alt="Wallpaper options"><br>**Wallpaper.** Change now, pick your themes, and choose how often it changes. |
+| <img src="docs/tvos/5-inputs.jpg" alt="Inputs"><br>**Inputs.** Your HDMI devices by the names you gave them; unplugged ones are dimmed. | <img src="docs/tvos/7-app-menu.jpg" alt="App menu"><br>**Arrange apps.** Hold OK: move an app (the others slide over), pin it to the dock, take it off the dock or off the home screen. |
+
+More in the tvOS-style one:
+- **Changing wallpapers:** every time the TV turns on, every 30 minutes, hourly, every 3 hours, daily, or never. Pictures are zoomed to fill the screen, and they're downloaded at most once a day, only while the home screen is in front.
+- **Bluetooth** opens Remotes & Accessories, with every paired remote, headphone and speaker.
+- **A fix for TVs that open Live TV over the home screen at start** (seen on MediaTek TVs like OnePlus): the home screen comes back by itself within a couple of seconds.
+- **Light:** plain Java, no libraries. Icons are drawn in code, and the glass effect uses one small blurred copy of the picture.
 
 ## Get started
 
 > [!WARNING]
-> **Google TV and Chromecast with Google TV:** don't turn off the TV's own home screen. On some of these devices that left them stuck restarting, and the only fix was a factory reset. Since v1.4.1, `install.sh` leaves it on for Google TV unless you opt in with `GOOGLE_TV=1`. The cleanup still works and makes the TV faster. You just keep Google TV's own home screen.
+> **Google TV and Chromecast with Google TV:** don't turn off the TV's own home screen. On some of these devices that left them stuck restarting, and the only fix was a factory reset. `install.sh` leaves it on for Google TV unless you opt in with `GOOGLE_TV=1`. The cleanup still works and makes the TV faster. You just keep Google TV's own home screen.
 
 > [!WARNING]
-> **OLED TVs:** keep the screensaver on. It stops a still picture from burning into the screen. Don't leave any home screen, this one included, on for hours.
+> **OLED TVs:** keep the screensaver on. It stops a still picture from burning into the screen. Don't leave any home screen, these included, on for hours.
 
 **1. Turn on developer mode on the TV.**
 Settings → Device Preferences → About → press **Build** 7 times. Then turn on **USB debugging** in **Developer options**. [Stuck?](#help)
@@ -52,7 +61,9 @@ Settings → Device Preferences → About → press **Build** 7 times. Then turn
 **2. Open [Claude Code](https://claude.com/claude-code) or [Codex](https://openai.com/codex) on your laptop.**
 The laptop and TV must be on the same Wi-Fi.
 
-**3. Paste this in.**
+**3. Optional, for the tvOS-style home screen: get a free Unsplash key** for fresh wallpapers. [How?](#unsplash-key) Without one you still get daily pictures from Wikimedia Commons and The Met.
+
+**4. Paste this in**, filled in with your TV and apps, and **keep only one of the two step 5 options**:
 
 ```text
 Help me clean up my Android TV and make it faster.
@@ -74,9 +85,18 @@ My TV is a <brand and model>.
    also never turn off Google TV's home screen
    (com.google.android.apps.tv.launcherx). If you're not
    sure, leave it on.
-5. Install the home screen: download
-   https://github.com/Ansub/tv-detox and run its
-   install.sh with my TV and these apps: <your apps>.
+5. Install the home screen. Use <this repo's GitHub URL>.
+   Keep ONE of these:
+   a) Basic: run its install.sh with my TV and these
+      apps: <your apps>.
+   b) tvOS-style: install Java 17+ and the Android SDK if
+      they're missing (ask me first), copy
+      unsplash.key.example to unsplash.key with my Unsplash
+      Access Key if I have one, run build.sh, then run
+      install.sh with my TV and these apps: <your apps>
+      (the first six go in the dock). Check that Home opens
+      it, that Up then OK opens Control Center, and that
+      after a restart the TV lands on it by itself.
 6. Turn off animations and make the TV sleep after 5
    minutes. Then check the model name and ask me if the TV
    is OLED. Keep the screensaver on unless I say it's not
@@ -90,7 +110,22 @@ My TV is a <brand and model>.
 That's it. It asks you before every change.
 
 > [!NOTE]
-> This is what worked for us, not professional advice. Use it at your own risk. You're responsible for your own TV, and I'm not liable if something goes wrong.
+> This is what worked for us, not professional advice. Use it at your own risk. You're responsible for your own TV, and nobody here is liable if something goes wrong.
+
+<a id="unsplash-key"></a>
+## Unsplash key (tvOS-style, optional)
+
+With a key, the tvOS-style home screen gets fresh landscapes, cities, space and art from [Unsplash](https://unsplash.com) every day. It's free, and **everyone uses their own key**: never share yours or commit it.
+
+1. Create an account at [unsplash.com/join](https://unsplash.com/join).
+2. Go to [unsplash.com/developers](https://unsplash.com/developers) → **Your apps** → **New Application**, accept the terms, and give it a name like "TV Home".
+3. Open the app, scroll to **Keys** and copy the **Access Key**. You don't need the Secret key.
+4. In this folder, copy `unsplash.key.example` to `unsplash.key` and replace its contents with your Access Key on one line. `unsplash.key` is in `.gitignore`, so it never gets committed.
+5. Run `sh build.sh`. It builds your key into the app on your TV, then `sh install.sh <TV_IP>`.
+
+**How much it uses:** about 12 requests a day, at most 20 in any hour, and it stops early if Unsplash says fewer than 10 are left. A new key allows 50 an hour. Change now never asks Unsplash; it cycles through pictures already on the TV. Each picture is credited to its photographer in Control Center.
+
+**Keep it private:** the built app (`out/tvhome.apk`) contains your key, so share this repo rather than your APK. If a key ever leaks, delete or regenerate it on Unsplash and rebuild.
 
 ## Help
 
@@ -303,7 +338,9 @@ You can. The cleanup is the part that makes the TV faster, and it works with any
 <summary><b>The TV still opens Live TV or HDMI when it turns on</b></summary>
 <br>
 
-That's a TV setting, not this home screen. Ask it: *"My TV opens Live TV at startup instead of the home screen. Find that setting and turn it off."*
+Usually that's a TV setting, not the home screen. Ask the AI: *"My TV opens Live TV at startup instead of the home screen. Find that setting and turn it off."*
+
+Some MediaTek TVs (OnePlus, for example) open Live TV on top of whatever home screen you use, with no setting to stop it. The **tvOS-style** home screen spots this in the first 30 seconds after the TV starts and brings itself back. `install.sh` gives it the two permissions it needs for that.
 
 </details>
 
@@ -335,13 +372,24 @@ Your list has one change per line, like `off com.example.app`, `global window_an
 <summary><b>Can I install the home screen without AI?</b></summary>
 <br>
 
-Yes. You only need `adb`. On a Mac, run `brew install android-platform-tools`. On Windows, download Google's [SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools), unzip it, and run the commands below from Git Bash. Download this repo, then:
+Yes. You need `adb`: on a Mac, `brew install android-platform-tools`; on Windows, Google's [SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools), run from Git Bash. Download this repo, then:
+
+**Basic** (downloads the ready-made release):
 
 ```sh
 sh install.sh <TV_IP>                                               # picks your TV apps for you
 sh install.sh <TV_IP> "com.netflix.ninja,com.hulu.livingroomplus"   # or choose them
 sh install.sh <TV_IP> "" "bluetooth,sound,picture"    # add settings shortcuts
 ```
+
+**tvOS-style** (built on your computer). You need Java 17 or newer and the Android SDK; see *For developers* below. Optionally add your [Unsplash key](#unsplash-key), then:
+
+```sh
+sh build.sh
+sh install.sh <TV_IP> "com.netflix.ninja,com.google.android.youtube.tv"   # the first six go in the dock
+```
+
+`install.sh` installs `out/tvhome.apk` when you've built it, and the basic release when you haven't.
 
 Most TVs keep opening their own home screen, so the script offers to turn that off. Nothing is uninstalled.
 
@@ -353,15 +401,22 @@ The cleanup half is a judgement call per app, so it's not automated. `sh candida
 <summary><b>How do I change the apps on the home screen?</b></summary>
 <br>
 
-Use the remote. Hold **OK** on an app (or press **Menu**) to:
+Use the remote. Hold **OK** on an app (or press **Menu**).
 
+**Basic:**
 - **Move** it: use the arrows to slide it to a new spot, then press **OK** to finish.
-- **Replace** it: pick another app to take its place.
-- **Remove** it from the home screen. The app stays installed, and you can add it back any time.
-- **Uninstall** it, for apps you installed yourself. The TV asks you to confirm first.
-- **App info**, for apps that came with the TV. They can't be uninstalled, but from there you can turn them off.
+- **Replace** it with another app.
+- **Remove** it from the home screen. The app stays installed, and **Add app** brings it back.
+- **Uninstall** it (apps you installed), or open **App info** (apps that came with the TV, where you can turn them off).
 
-To add an app, pick the **Add app** tile in the bottom row. Add as many apps as you like: they wrap into rows of six, and the page scrolls once there are more than twelve. Your changes are kept until you run `install.sh` with a new app list.
+**tvOS-style:**
+- **Move:** slide the app anywhere with the arrows. The apps it passes slide over by one, including between the dock and the rows. **OK** keeps it, **Back** puts everything back.
+- **Pin to dock** fills the first empty dock slot. When all six slots are taken it's greyed out; use Move instead.
+- **Remove from dock** leaves an empty slot and puts the app at the start of the rows.
+- **Remove from home** hides the app, and **Add app** brings it back.
+- **Uninstall** or **App info**, as in the basic one.
+
+Every app on the TV appears in the rows by itself, including new ones. Tools that came with the TV (like a clock or service apps) start hidden; Add app lists them.
 
 </details>
 
@@ -369,7 +424,14 @@ To add an app, pick the **Add app** tile in the bottom row. Add as many apps as 
 <summary><b>Can I change the background?</b></summary>
 <br>
 
-Yes. Pick the **Settings** tile, then **Wallpaper**. (**TV settings**, right under it, opens the TV's own settings.) There are fourteen gradients. Dark: Dusk (the default), Midnight, Plum, Forest, Graphite, Ocean and Ember. Bright: Sunset, Lagoon, Aurora, Coral, Iris, Meadow and Gold. The background changes as you move through the list; press **OK** to keep one, or **Back** to leave it as it was. They're colours only, no pictures, so every one is just as fast and uses the same memory.
+**Basic:** pick the **Settings** tile, then **Wallpaper**, for one of fourteen colour gradients.
+
+**tvOS-style:** press **Up** to the time pill, **OK**, then **Wallpaper**:
+- **Change now:** shows another picture straight away.
+- **Themes:** landscapes, cities, space and art. At least one stays on, and daily downloads only fetch the themes you've ticked.
+- **Change picture:** every time the TV turns on, every 30 minutes, every hour, every 3 hours, once a day, or never.
+
+The credit for the picture on screen is at the bottom of Control Center.
 
 </details>
 
@@ -377,14 +439,14 @@ Yes. Pick the **Settings** tile, then **Wallpaper**. (**TV settings**, right und
 <summary><b>Can I get Wi-Fi and Bluetooth one press away?</b></summary>
 <br>
 
-Yes. A small network icon always sits next to the clock. It shows **Wi-Fi** (with signal bars), **Ethernet** or a crossed-out Wi-Fi when you're offline, and opens your network settings. **Bluetooth**, **Sound** and **Picture** shortcuts can join it. They're off unless you ask for them:
+**tvOS-style:** they're in Control Center (**Up**, then **OK** on the time pill). Wi-Fi shows the network's name and signal; Bluetooth shows the connected remote and opens Remotes & Accessories.
+
+**Basic:** a small network icon always sits next to the clock. It shows **Wi-Fi** (with signal bars), **Ethernet** or a crossed-out Wi-Fi when you're offline, and opens your network settings. **Bluetooth**, **Sound** and **Picture** shortcuts can join it:
 
 ```sh
 sh install.sh <TV_IP> "" "bluetooth,sound,picture"   # pick any of them, in any order
-sh install.sh <TV_IP> "" "none"                                    # take them away
+sh install.sh <TV_IP> "" "none"                      # take them away
 ```
-
-Press **Up** from your apps to reach them. A shortcut your TV has no screen for is left out. On TCL TVs, Sound and Picture open TCL's own panels.
 
 </details>
 
@@ -429,33 +491,34 @@ If the laptop never connects, use the TV's recovery mode or a factory reset. How
 <br>
 
 1. Put your default apps in `apps.txt` (package names, one per line). You can also pass them to `install.sh` instead.
-2. Install Java 17 and the Android SDK. On a Mac:
+2. Install Java 17 or newer and the Android SDK. On a Mac:
    ```sh
    brew install openjdk@17
    brew install --cask android-commandlinetools
    sdkmanager "platforms;android-34" "build-tools;34.0.0"
    ```
-3. `sh build.sh`, then `sh install.sh <TV_IP>` installs your build instead of the release.
-4. `sh ci/smoke-test.sh <TV_IP or emulator>` checks it all works.
+   `build.sh` uses platform and build-tools 34 when they're there, otherwise the newest you have.
+3. Optional: your [Unsplash key](#unsplash-key) in `unsplash.key`.
+4. `sh build.sh`, then `sh install.sh <TV_IP>`.
+5. Checks:
+   - `sh tests/run.sh`: JVM tests for the app arrangement, wallpaper rules and the Wikimedia/Met/Unsplash parsing (no TV needed).
+   - `sh ci/device-check.sh <TV_IP>`: installs on a real TV and checks Home, Control Center, memory (under 30 MB) and the start-up fix. It never undoes anything.
+   - `sh ci/smoke-test.sh <emulator>`: the full install-and-undo test. It runs `undo.sh` at the end, so don't point it at the TV you watch.
 
-HDMI inputs are found on their own. The labels follow the TV's language, with 16 languages built in. To add yours or fix a translation, edit `src/com/ansub/tvhome/Strings.java`. Keep `key.jks`, which is made on your first build: updates must be signed with the same key.
+The built-in wallpapers are in `assets/walls/` with their credits in `index.tsv`; `tools/walls.py` rebuilds them from `tools/walls-picks.tsv`. HDMI inputs are found on their own. The labels follow the TV's language, with 16 languages built in (newer labels fall back to English); edit `src/com/ansub/tvhome/Strings.java` to add yours. Keep `key.jks`, which is made on your first build: updates must be signed with the same key.
 
-It's one screen of plain Java, no libraries, no Gradle. The background is drawn once, the only animation is the focus lift, and it uses about 30 MB of RAM.
+It's plain Java, no libraries, no Gradle.
 
 </details>
 
 ## Contributing
 
-Pull requests are welcome for fixes that keep working on every TV. This project sticks to official apps and Android's own settings, so changes that add ad blockers or unofficial apps won't be merged. If you want those, fork it and make it yours.
+Pull requests are welcome for fixes that keep working on every TV. This project sticks to official apps and Android's own settings, so changes that add ad blockers or unofficial apps won't be merged.
 
 ---
 
 <div align="center">
 
-Made by **Ansub Khan**. I build things like this with AI every week.
-
-[**Watch on YouTube →**](https://www.youtube.com/@ansubkhan)
-
-<sub>MIT License</sub>
+Based on [TV Detox](https://github.com/Ansub/tv-detox) by Ansub Khan · MIT License
 
 </div>

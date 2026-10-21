@@ -8,7 +8,8 @@
 # On Google TV (Chromecast with Google TV and others) the TV's own home screen is left on.
 # GOOGLE_TV=1 turns it off anyway; only do that if you can reconnect over USB or port 5555.
 #
-# Uses out/tvhome.apk if you built it, otherwise downloads the latest release.
+# Uses out/tvhome.apk if you built it (sh build.sh: the tvOS-style home screen), otherwise downloads
+# the latest release of the basic home screen.
 set -e
 cd "$(dirname "$0")"
 
@@ -50,6 +51,13 @@ if ! out=$(adb -s "$TV" install -r "$APK" 2>&1); then
     *) echo "$out" >&2; exit 1 ;;
   esac
 fi
+
+# The tvOS-style build asks for three things only adb can give: to see when Live TV covers it at
+# start and bring itself back (usage access + open from the background), and the Wi-Fi network's
+# name for Control Center (location). The basic home screen doesn't ask, so these do nothing there.
+adb -s "$TV" shell appops set com.ansub.tvhome GET_USAGE_STATS allow >/dev/null 2>&1 || true
+adb -s "$TV" shell appops set com.ansub.tvhome SYSTEM_ALERT_WINDOW allow >/dev/null 2>&1 || true
+adb -s "$TV" shell pm grant com.ansub.tvhome android.permission.ACCESS_FINE_LOCATION >/dev/null 2>&1 || true
 
 if [ -n "$APPS" ] || [ -n "$QUICK" ]; then
   # The stamp makes the app apply this list once, even if Android later replays this start.

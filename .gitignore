@@ -1,5 +1,19 @@
+# Build output (the APK contains your Unsplash key, so it never belongs in git)
 out/
-key.jks
 *.apk
+
+# Your own secrets: the app signing key and your Unsplash key
+key.jks
+*.jks
+*.keystore
+unsplash.key
+
+# Test downloads and output
+tests/lib/
+tests/out/
+
+# Editor and OS files
 .DS_Store
 .idea
+.vscode
+.superpowers/

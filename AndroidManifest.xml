@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ansub.tvhome" android:versionCode="14" android:versionName="1.5.1">
+    package="com.ansub.tvhome" android:versionCode="15" android:versionName="1.6.0-tvos">
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
     <!-- Only for the network tile: Wi-Fi, Ethernet or offline, and the Wi-Fi signal. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Fresh background pictures, at most once a day while Home is in front. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Control Center: Android only tells an app the Wi-Fi network's name with location access
+         (granted over adb), and which Bluetooth devices are connected with BLUETOOTH. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <!-- Android 11+ only shows apps a home screen asks to see: TV apps and normal apps. -->
     <queries>
         <intent>
@@ -27,6 +33,11 @@
     </queries>
     <!-- Lets "Uninstall" in the app menu open Android's uninstall prompt. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- BootReceiver: bring Home back if the TV opens Live TV over it at start. The last two only
+         work once granted over adb (appops), see BootReceiver. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <application android:label="Home" android:allowBackup="false"
@@ -43,5 +54,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <receiver android:name=".BootReceiver" android:exported="true" android:directBootAware="true">
+            <!-- Boot is sent to one app at a time; without a priority it can arrive half a minute late. -->
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
