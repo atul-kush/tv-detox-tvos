@@ -383,7 +383,7 @@ public class MainActivity extends Activity {
         pill.setOnClickListener(v -> controlCenter.show());
         pill.setOnKeyListener((v, code, ev) -> {
             if (ev.getAction() != KeyEvent.ACTION_DOWN) return false;
-            if (code == KeyEvent.KEYCODE_DPAD_DOWN) { focusFirst(); return true; }
+            if (code == KeyEvent.KEYCODE_DPAD_DOWN) { focusBelowPill(); return true; }
             return code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_LEFT
                     || code == KeyEvent.KEYCODE_DPAD_RIGHT;
         });
@@ -642,8 +642,15 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    // The first app in the dock. With nothing in the dock, Home stays as it is with the pill focused
+    // (so the time and Control Center are right there); Down from the pill goes on to the rows.
     void focusFirst() {
         if (scrolled) setScrolled(false);
+        for (String k : line.dock()) if (k != null && go(k)) return;
+        pill.requestFocus();
+    }
+
+    private void focusBelowPill() {
         for (String k : line.dock()) if (k != null && go(k)) return;
         setScrolled(true);
         go(nearest(1, 0));
