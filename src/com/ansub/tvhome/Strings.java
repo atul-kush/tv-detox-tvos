@@ -19,6 +19,7 @@ final class Strings {
         "Change now", "Themes", "Change picture", "Choose themes and how often it changes",
         "Landscapes", "Cities", "Space", "Art", "All themes", "Every time the TV turns on",
         "Every 30 minutes", "Every hour", "Every 3 hours", "Once a day", "Never (keep this one)",
+        "Choose apps for your dock", "Up to six apps", "Done",
     };
 
     // Keyed by language ("de"), or language-country ("zh-TW") where a country writes it differently.

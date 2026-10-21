@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
     private int screenW, screenH, tileW, tileH;
     private FrameLayout grid;        // dock and rows; slides up for the all-apps view
     private View dockGlass;
+    private View chooseDock; // shown over an empty dock: "Choose apps for your dock"
     private FrameLayout pill;
     private TextView moveHint;
     private ImageView wallView, blurView;
@@ -423,6 +424,8 @@ public class MainActivity extends Activity {
                 gaps.add(null);
             }
         }
+        if (chooseDock != null) grid.removeView(chooseDock);
+        chooseDock = line.dockEmpty() ? makeChooseDock() : null;
         for (String key : line.rows()) addTile(pm, key);
         addTile(pm, ADD);
         grid.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
@@ -553,6 +556,16 @@ public class MainActivity extends Activity {
             View v = key == null ? gaps.get(i) : wraps.get(key);
             place(v, Math.round(m + pad + i * (tileW + gap)), Math.round(dockTop + pad), key == null);
         }
+        // An empty dock shows only its button, not six empty outlines.
+        for (View g : gaps) if (g != null) g.setVisibility(chooseDock != null ? View.INVISIBLE : View.VISIBLE);
+        if (chooseDock != null) {
+            FrameLayout.LayoutParams cl = (FrameLayout.LayoutParams) chooseDock.getLayoutParams();
+            cl.width = Math.round(w(0.3f));
+            cl.height = Math.round(tileH * 0.62f);
+            cl.leftMargin = (screenW - cl.width) / 2;
+            cl.topMargin = dockTop + (dockH - cl.height) / 2;
+            chooseDock.setLayoutParams(cl);
+        }
         int rowsTop = dockTop + dockH + Math.round(rowGap);
         List<String> rows = new ArrayList<>(line.rows());
         rows.add(ADD);
@@ -647,13 +660,141 @@ public class MainActivity extends Activity {
     void focusFirst() {
         if (scrolled) setScrolled(false);
         for (String k : line.dock()) if (k != null && go(k)) return;
-        pill.requestFocus();
+        (chooseDock != null ? chooseDock : pill).requestFocus();
     }
 
     private void focusBelowPill() {
         for (String k : line.dock()) if (k != null && go(k)) return;
+        if (chooseDock != null) {
+            chooseDock.requestFocus();
+            return;
+        }
         setScrolled(true);
         go(nearest(1, 0));
+    }
+
+    // The button over an empty dock (none of its apps is installed, or all were taken off).
+    private View makeChooseDock() {
+        final TextView b = text(w(0.0135f), Color.WHITE, semibold);
+        b.setText(Strings.t("Choose apps for your dock"));
+        b.setGravity(Gravity.CENTER);
+        b.setSingleLine(true);
+        final GradientDrawable bg = new GradientDrawable();
+        bg.setCornerRadius(w(RADIUS));
+        bg.setColor(0x33FFFFFF);
+        b.setBackground(bg);
+        b.setFocusable(true);
+        b.setTag("choose");
+        b.setOnFocusChangeListener((v, has) -> {
+            bg.setColor(has ? 0xEBFFFFFF : 0x33FFFFFF);
+            b.setTextColor(has ? 0xFF111111 : Color.WHITE);
+            v.setScaleX(has ? 1.06f : 1f);
+            v.setScaleY(has ? 1.06f : 1f);
+            if (has && scrolled) setScrolled(false);
+        });
+        b.setOnClickListener(v -> chooseDockApps());
+        b.setOnKeyListener((v, code, ev) -> {
+            if (ev.getAction() != KeyEvent.ACTION_DOWN) return false;
+            if (code == KeyEvent.KEYCODE_DPAD_UP) { pill.requestFocus(); return true; }
+            if (code == KeyEvent.KEYCODE_DPAD_DOWN) {
+                String first = nearest(1, 0);
+                if (first != null) {
+                    setScrolled(true);
+                    go(first);
+                }
+                return true;
+            }
+            return code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT;
+        });
+        grid.addView(b, new FrameLayout.LayoutParams(1, 1));
+        return b;
+    }
+
+    // Every app on the home screen with a tick: pick up to six for the dock, in the order ticked.
+    // Done fills the dock; Back leaves it as it was.
+    private void chooseDockApps() {
+        final List<String> keys = new ArrayList<>();
+        for (String k : line.rows()) keys.add(k);
+        final List<String> chosen = new ArrayList<>();
+        final Dialog d = new Dialog(this, android.R.style.Theme_Material_Dialog_NoActionBar);
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        int p = Math.round(w(0.025f));
+        box.setPadding(p, Math.round(w(0.048f)), p, p);
+        TextView head = text(w(0.021f), Color.WHITE, semibold);
+        head.setText(Strings.t("Choose apps for your dock"));
+        head.setPadding(Math.round(w(0.0125f)), 0, Math.round(w(0.0125f)), 0);
+        box.addView(head);
+        final TextView hint = text(w(0.0115f), 0xB3FFFFFF, regular);
+        hint.setText(Strings.t("Up to six apps"));
+        hint.setPadding(Math.round(w(0.0125f)), Math.round(w(0.004f)), Math.round(w(0.0125f)), 0);
+        box.addView(hint);
+
+        final ListView list = new ListView(this);
+        list.setDivider(null);
+        list.setVerticalScrollBarEnabled(false);
+        list.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        GradientDrawable focus = new GradientDrawable();
+        focus.setCornerRadius(w(RADIUS));
+        focus.setColor(0x38FFFFFF);
+        list.setSelector(focus);
+        final int size = Math.round(w(0.022f));
+        final BaseAdapter adapter = new BaseAdapter() {
+            @Override public int getCount() { return keys.size() + 1; }
+            @Override public Object getItem(int pos) { return pos; }
+            @Override public long getItemId(int pos) { return pos; }
+            @Override public View getView(int pos, View convert, ViewGroup parent) {
+                TextView t = convert != null ? (TextView) convert : text(w(0.0156f), 0xE6FFFFFF, regular);
+                t.setSingleLine(true);
+                t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                t.setGravity(Gravity.CENTER_VERTICAL);
+                t.setMinHeight(Math.round(w(0.042f)));
+                t.setPadding(Math.round(w(0.0125f)), 0, Math.round(w(0.0125f)), 0);
+                t.setCompoundDrawablePadding(Math.round(w(0.0125f)));
+                Drawable icon;
+                if (pos == 0) {
+                    t.setText(Strings.t("Done") + (chosen.isEmpty() ? "" : " (" + chosen.size() + ")"));
+                    icon = Glyph.plus();
+                    t.setTypeface(semibold);
+                } else {
+                    String k = keys.get(pos - 1);
+                    int at = chosen.indexOf(k);
+                    t.setText((at >= 0 ? (at + 1) + ".  " : "") + labelOf(k));
+                    icon = Glyph.check(at >= 0);
+                    t.setTypeface(regular);
+                }
+                icon.setBounds(0, 0, size, size);
+                t.setCompoundDrawablesRelative(icon, null, null, null);
+                return t;
+            }
+        };
+        list.setAdapter(adapter);
+        list.setOnItemClickListener((parent, v, pos, id) -> {
+            if (pos == 0) {
+                d.dismiss();
+                if (chosen.isEmpty()) return;
+                line.setDock(chosen);
+                saveLine();
+                focusedKey = chosen.get(0);
+                buildTiles();
+                return;
+            }
+            String k = keys.get(pos - 1);
+            if (chosen.contains(k)) chosen.remove(k);
+            else if (chosen.size() < AppLine.DOCK) chosen.add(k);
+            else Toast.makeText(this, Strings.t("Up to six apps"), Toast.LENGTH_SHORT).show();
+            adapter.notifyDataSetChanged();
+        });
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, 0, 1f);
+        lp.topMargin = Math.round(w(0.015f));
+        box.addView(list, lp);
+        d.setContentView(box);
+        Window win = d.getWindow();
+        win.setBackgroundDrawable(new ColorDrawable(0xF7161113));
+        win.setLayout(Math.round(w(0.333f)), -1);
+        win.setGravity(Gravity.END);
+        win.setDimAmount(0.5f);
+        d.show();
     }
 
     private boolean navigate(String key, int code) {
@@ -674,9 +815,9 @@ public class MainActivity extends Activity {
                     return true;
                 }
                 if (row == 1 && nearest(0, col) == null) {
-                    // Nothing in the dock: Up goes straight on to the pill.
+                    // Nothing in the dock: Up goes to "Choose apps for your dock" (or the pill).
                     setScrolled(false);
-                    pill.requestFocus();
+                    (chooseDock != null ? chooseDock : pill).requestFocus();
                     return true;
                 }
                 go(row == 1 ? nearest(0, col) : nearest(row - 1, col));

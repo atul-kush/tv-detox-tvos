@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.text.TextUtils;
@@ -159,21 +157,8 @@ final class Wallpapers {
             Bitmap out = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             Canvas c = new Canvas(out);
             Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
-            if (p.art) {
-                // A painting fits inside the screen, over a blurred, dimmed copy of itself.
-                Bitmap soft = Glass.blur(src);
-                ColorMatrix dim = new ColorMatrix();
-                dim.setScale(0.6f, 0.6f, 0.6f, 1f);
-                Paint dimmed = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
-                dimmed.setColorFilter(new ColorMatrixColorFilter(dim));
-                c.drawBitmap(soft, cover(soft.getWidth(), soft.getHeight()), new Rect(0, 0, width, height), dimmed);
-                soft.recycle();
-                float s = Math.min((float) width / src.getWidth(), (float) height / src.getHeight());
-                int w = Math.round(src.getWidth() * s), h = Math.round(src.getHeight() * s);
-                c.drawBitmap(src, null, new Rect((width - w) / 2, (height - h) / 2, (width + w) / 2, (height + h) / 2), paint);
-            } else {
-                c.drawBitmap(src, cover(src.getWidth(), src.getHeight()), new Rect(0, 0, width, height), paint);
-            }
+            // Every picture, paintings included, is zoomed to fill the screen (centre kept, edges trimmed).
+            c.drawBitmap(src, cover(src.getWidth(), src.getHeight()), new Rect(0, 0, width, height), paint);
             src.recycle();
             src = null;
             Glass.setBlurred(Glass.blur(out));

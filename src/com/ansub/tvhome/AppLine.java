@@ -91,6 +91,27 @@ final class AppLine {
         return true;
     }
 
+    boolean dockEmpty() {
+        for (String k : dock) if (k != null) return false;
+        return true;
+    }
+
+    // The dock becomes these apps (the first six), in this order. They leave the rows; apps that
+    // were in the dock go to the start of the rows.
+    void setDock(List<String> keys) {
+        List<String> old = new ArrayList<>();
+        for (String k : dock) if (k != null && !keys.contains(k)) old.add(k);
+        Arrays.fill(dock, null);
+        int i = 0;
+        for (String k : keys) {
+            if (i == DOCK) break;
+            if (k == null || Arrays.asList(dock).contains(k)) continue;
+            rows.remove(k);
+            dock[i++] = k;
+        }
+        rows.addAll(0, old);
+    }
+
     // Puts an app from the rows into the first empty dock slot. False if the dock is full.
     boolean pin(String key) {
         if (!rows.contains(key)) return false;

@@ -417,6 +417,8 @@ Use the remote. Hold **OK** on an app (or press **Menu**).
 - **Remove from home** hides the app, and **Add app** brings it back.
 - **Uninstall** or **App info**, as in the basic one.
 
+If the dock is empty (none of your chosen apps are on this TV, or you took them all off), it shows **Choose apps for your dock**: tick up to six apps, in the order you want them, and press **Done**.
+
 Every app on the TV appears in the rows by itself, including new ones. Tools that came with the TV (like a clock or service apps) start hidden; Add app lists them.
 
 </details>

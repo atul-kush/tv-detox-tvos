@@ -132,6 +132,24 @@ public class AppLineTest {
         Check.eq(asList("x", "b", STORE, SET), l.rows(), "unhide before store");
         Check.yes(!l.hidden().contains("b"), "unhidden");
 
+        // dockEmpty: only when all six slots are empty
+        Check.yes(line("_ _ _ _ _ _ | a b").dockEmpty(), "empty dock");
+        Check.yes(!line("_ _ a _ _ _ | b").dockEmpty(), "one app is not empty");
+
+        // setDock: chosen apps fill the dock in the order picked and leave the rows
+        l = line("_ _ _ _ _ _ | a b c d e f g h");
+        l.setDock(asList("c", "a", "h"));
+        Check.eq(dock("c", "a", "h", null, null, null), l.dock(), "chosen dock");
+        Check.eq(asList("b", "d", "e", "f", "g"), l.rows(), "chosen apps left the rows");
+        l = line("_ _ _ _ _ _ | a b c d e f g h");
+        l.setDock(asList("a", "b", "c", "d", "e", "f", "g"));
+        Check.eq(dock("a", "b", "c", "d", "e", "f"), l.dock(), "at most six");
+        Check.eq(asList("g", "h"), l.rows(), "the seventh stays in the rows");
+        l = line("x _ _ _ _ _ | a b");
+        l.setDock(asList("b"));
+        Check.eq(dock("b", null, null, null, null, null), l.dock(), "replaces the dock");
+        Check.eq(asList("x", "a"), l.rows(), "old dock app goes to the start of the rows");
+
         // positionOf
         l = line("a _ c d e f | g h");
         Check.eq(2, l.positionOf("c"), "dock pos");
