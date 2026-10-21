@@ -85,7 +85,8 @@ My TV is a <brand and model>.
    also never turn off Google TV's home screen
    (com.google.android.apps.tv.launcherx). If you're not
    sure, leave it on.
-5. Install the home screen. Use <this repo's GitHub URL>.
+5. Install the home screen from
+   https://github.com/atul-kush/tv-detox-tvos
    Keep ONE of these:
    a) Basic: run its install.sh with my TV and these
       apps: <your apps>.
