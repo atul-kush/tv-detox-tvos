@@ -10,7 +10,9 @@ import java.util.Set;
 // The decisions behind the background picture: which shapes fit, when to change and fetch,
 // which one comes next, and the credit line. Plain Java, so it's tested on a laptop.
 final class PictureRules {
-    static final long FETCH_EVERY = 86_400_000L;
+    // New pictures are fetched every 12 hours; the last RECENT shown aren't shown again until the rest have been.
+    static final long FETCH_EVERY = 43_200_000L;
+    static final int RECENT = 30;
 
     // "Change picture" choices, in the order the button cycles through them. ON_TV_ON changes only when
     // the TV comes on; the others are timers; NEVER keeps the picture until "Change now".
@@ -117,26 +119,31 @@ final class PictureRules {
         return out;
     }
 
-    static boolean shouldFetch(long lastFetch, long now) {
-        return lastFetch == 0 || now - lastFetch >= FETCH_EVERY;
+    // Every 12 hours, or sooner (at most hourly) when fewer than three downloaded pictures per ticked
+    // theme are left: a theme just ticked, a cache the system cleared, or an earlier fetch cut short.
+    static boolean shouldFetch(long lastFetch, long now, int downloaded, int themes) {
+        if (lastFetch == 0 || now - lastFetch >= FETCH_EVERY) return true;
+        return now - lastFetch >= 3_600_000L && downloaded < 3 * Math.max(1, themes);
     }
 
-    // The newest downloaded picture not shown lately, otherwise a random one from another category
-    // than the last. When that leaves nothing, the category and then the "lately" rule are dropped.
+    // A random picture from the whole pool, downloaded and built-in together, that wasn't shown lately
+    // and (when there's a choice) isn't from the same theme as the last one. Downloaded ones are picked
+    // about two times in three, so what's new leads without the built-in set going unseen. When
+    // everything was shown lately, the "lately" rule is dropped.
     static Picture pickNext(List<Picture> pool, List<String> recentIds, Set<String> badIds, String lastCategory, Random r) {
         List<Picture> ok = new ArrayList<>();
         for (Picture p : pool) if (!badIds.contains(p.id)) ok.add(p);
         if (ok.isEmpty()) return null;
-        Picture newest = null;
-        for (Picture p : ok) {
-            if (p.fresh && !recentIds.contains(p.id) && (newest == null || p.added > newest.added)) newest = p;
-        }
-        if (newest != null) return newest;
-        List<Picture> choice = new ArrayList<>();
-        for (Picture p : ok) if (!recentIds.contains(p.id) && !p.category.equals(lastCategory)) choice.add(p);
-        if (choice.isEmpty()) for (Picture p : ok) if (!recentIds.contains(p.id)) choice.add(p);
-        if (choice.isEmpty()) choice = ok;
-        return choice.get(r.nextInt(choice.size()));
+        List<Picture> unseen = new ArrayList<>();
+        for (Picture p : ok) if (!recentIds.contains(p.id)) unseen.add(p);
+        if (unseen.isEmpty()) unseen = ok;
+        List<Picture> other = new ArrayList<>();
+        for (Picture p : unseen) if (!p.category.equals(lastCategory)) other.add(p);
+        List<Picture> choice = other.isEmpty() ? unseen : other;
+        List<Picture> fresh = new ArrayList<>(), builtIn = new ArrayList<>();
+        for (Picture p : choice) (p.fresh ? fresh : builtIn).add(p);
+        List<Picture> from = fresh.isEmpty() ? builtIn : builtIn.isEmpty() ? fresh : r.nextInt(3) < 2 ? fresh : builtIn;
+        return from.get(r.nextInt(from.size()));
     }
 
     static String credit(Picture p) {

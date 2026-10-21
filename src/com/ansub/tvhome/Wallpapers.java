@@ -26,7 +26,6 @@ import java.util.Set;
 // one in memory at a time, drawn at the screen's size. Which one and when come from PictureRules.
 final class Wallpapers {
     private static final String TAG = "tvhome";
-    private static final int RECENT = 10;
 
     private final Context context;
     private final SharedPreferences prefs;
@@ -62,9 +61,13 @@ final class Wallpapers {
         return themes;
     }
 
+    // A theme newly ticked wants its pictures: forget when the last fetch was, so Home fetches on its next visit.
     void setThemes(Set<String> themes) {
-        prefs.edit().putString("themes", TextUtils.join(",", themes))
-                .putString("themesSeen", TextUtils.join(",", PictureRules.THEMES)).apply();
+        Set<String> before = new java.util.LinkedHashSet<>(csv(prefs.getString("themes", "")));
+        SharedPreferences.Editor e = prefs.edit().putString("themes", TextUtils.join(",", themes))
+                .putString("themesSeen", TextUtils.join(",", PictureRules.THEMES));
+        if (!before.containsAll(themes)) e.remove("lastFetch");
+        e.apply();
     }
 
     // How often the picture changes, one of PictureRules.EVERY.
@@ -106,7 +109,7 @@ final class Wallpapers {
                 List<String> recent = new ArrayList<>(csv(prefs.getString("recent", "")));
                 recent.remove(p.id);
                 recent.add(0, p.id);
-                while (recent.size() > RECENT) recent.remove(recent.size() - 1);
+                while (recent.size() > PictureRules.RECENT) recent.remove(recent.size() - 1);
                 prefs.edit().putLong("lastChange", now).putString("recent", TextUtils.join(",", recent))
                         .putString("lastCategory", p.category).apply();
                 return b;

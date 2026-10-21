@@ -106,6 +106,7 @@ public class MainActivity extends Activity {
     private final Runnable recheck = new Runnable() {
         @Override public void run() {
             showPicture();
+            fetcher.startIfDue(); // also picks up a newly ticked theme without leaving Home
             ticker.postDelayed(this, 60_000);
         }
     };
@@ -301,6 +302,7 @@ public class MainActivity extends Activity {
     private void applyPicture(Bitmap b) {
         if (b == null) return;
         wallView.setImageBitmap(b);
+        fetcher.pingShown(walls.current());
         blurView.setImageBitmap(Glass.blurred());
         walls.freePrevious();
         Runtime.getRuntime().gc(); // the picture it replaced and its decode buffers can go now

@@ -106,15 +106,32 @@ public class PictureRulesTest {
         Check.yes(PictureRules.mayAskUnsplash(new ArrayList<Long>(), t, 11), "11 left");
         Check.eq(Arrays.asList(t), PictureRules.lastHour(Arrays.asList(t - 3_600_000L, t), t), "only the last hour kept");
 
-        // shouldFetch
-        Check.yes(PictureRules.shouldFetch(0, t), "never fetched");
-        Check.yes(!PictureRules.shouldFetch(t, t + 86_399_999), "under a day");
-        Check.yes(PictureRules.shouldFetch(t, t + 86_400_000), "a day");
+        Check.yes(!PictureRules.shouldFetch(t, t + 43_199_999, 60, 6), "plenty downloaded, under twelve hours");
+        Check.yes(PictureRules.shouldFetch(t, t + 43_200_000, 60, 6), "twelve hours");
+        Check.yes(PictureRules.shouldFetch(0, t, 60, 6), "never fetched");
+        // too few downloaded pictures for the ticked themes: fetch again, but no more than once an hour
+        Check.yes(PictureRules.shouldFetch(t, t + 3_600_000L, 5, 6), "running low, an hour on");
+        Check.yes(!PictureRules.shouldFetch(t, t + 3_599_999L, 5, 6), "running low, but under an hour");
+        Check.yes(!PictureRules.shouldFetch(t, t + 3_600_000L, 18, 6), "three per theme is enough");
+        Check.yes(PictureRules.shouldFetch(t, t + 3_600_000L, 17, 6), "under three per theme");
+        Check.yes(PictureRules.shouldFetch(t, t + 3_600_000L, 0, 1), "cache cleared");
 
-        // pickNextPrefersNewestFreshUnseen
-        List<Picture> pool = Arrays.asList(pic("b1", "landscapes", false, 0), pic("f1", "cities", true, 10), pic("f2", "space", true, 20));
-        Check.eq("f2", PictureRules.pickNext(pool, NONE, NO_BAD, null, new Random(1)).id, "newest fresh");
-        Check.eq("f1", PictureRules.pickNext(pool, Arrays.asList("f2"), NO_BAD, null, new Random(1)).id, "next fresh");
+        // pickNextMixesFreshAndBuiltIn: downloaded and built-in pictures both come up
+        List<Picture> pool = Arrays.asList(pic("b1", "landscapes", false, 0), pic("f1", "landscapes", true, 10), pic("f2", "landscapes", true, 20));
+        Random mix = new Random(3);
+        Set<String> got = new HashSet<>();
+        for (int i = 0; i < 200; i++) got.add(PictureRules.pickNext(pool, NONE, NO_BAD, null, mix).id);
+        Check.eq(new HashSet<>(Arrays.asList("b1", "f1", "f2")), got, "every picture can come up");
+        int fresh = 0;
+        for (int i = 0; i < 400; i++) if (PictureRules.pickNext(pool, NONE, NO_BAD, null, mix).fresh) fresh++;
+        Check.yes(fresh > 220, "downloaded pictures lead (" + fresh + " of 400)");
+
+        // pickNextSkipsRecent: nothing comes up again until the rest have been shown
+        List<Picture> three = Arrays.asList(pic("a", "space", false, 0), pic("b", "space", true, 5), pic("c", "space", true, 6));
+        for (int i = 0; i < 30; i++) Check.eq("c", PictureRules.pickNext(three, Arrays.asList("a", "b"), NO_BAD, null, mix).id, "only the unseen one");
+
+        // the last 30 shown are remembered
+        Check.eq(30, PictureRules.RECENT, "recent memory");
 
         // pickNextAvoidsLastCategory
         pool = Arrays.asList(pic("l1", "landscapes", false, 0), pic("c1", "cities", false, 0));

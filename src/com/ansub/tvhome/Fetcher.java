@@ -25,7 +25,7 @@ import java.util.Set;
 // cache/walls with a .tsv line each. Anything that goes wrong just means no new picture today.
 final class Fetcher {
     private static final String TAG = "tvhome";
-    private static final int KEEP = 12, TIMEOUT = 10_000;
+    private static final int KEEP = 60, PER_THEME = 5, TIMEOUT = 10_000;
     private static final String[][] WIKIMEDIA = {{"landscapes", "Featured_pictures_of_landscapes"},
             {"cities", "Featured_pictures_of_cityscapes"}, {"space", "Featured_pictures_of_astronomy"}};
     private static final String[] ART_QUERIES = {"landscape", "seascape", "mountains", "garden", "city view"};
@@ -52,7 +52,10 @@ final class Fetcher {
 
     void startIfDue() {
         if (thread != null && thread.isAlive()) return;
-        if (!PictureRules.shouldFetch(prefs.getLong("lastFetch", 0), System.currentTimeMillis()) || !online()) return;
+        int downloaded = 0;
+        for (Picture p : walls.pool()) if (p.fresh) downloaded++;
+        if (!PictureRules.shouldFetch(prefs.getLong("lastFetch", 0), System.currentTimeMillis(), downloaded,
+                walls.themes().size()) || !online()) return;
         cancelled = false;
         thread = new Thread(this::run, "tvhome-fetch");
         thread.setPriority(Thread.MIN_PRIORITY);
@@ -99,8 +102,9 @@ final class Fetcher {
         }
     }
 
-    // Two new photos per chosen theme, cropped by Unsplash to the screen's size. Every request is
-    // counted so the TV never comes near the free key's 50 an hour (see PictureRules.mayAskUnsplash).
+    // Five new photos per chosen theme in a single request each, cropped by Unsplash to the screen's size.
+    // Every request is counted so the TV never comes near the free key's 50 an hour (see
+    // PictureRules.mayAskUnsplash). Unsplash is told a photo was used when it's shown (pingShown).
     private void fromUnsplash(Set<String> themes, Set<String> known, File dir) {
         int w = context.getResources().getDisplayMetrics().widthPixels;
         int h = context.getResources().getDisplayMetrics().heightPixels;
@@ -115,18 +119,34 @@ final class Fetcher {
                 String query = PictureRules.unsplashQuery(theme, day);
                 // Illustrations are searched, a different page of the matches each day so they don't repeat.
                 String url = PictureRules.unsplashIllustrations(theme)
-                        ? Sources.unsplashIllustrationsUrl(query, 1 + random.nextInt(40), 2) : Sources.unsplashUrl(query, 2);
+                        ? Sources.unsplashIllustrationsUrl(query, 1 + random.nextInt(40), PER_THEME) : Sources.unsplashUrl(query, PER_THEME);
                 List<Sources.Found> found = Sources.parseUnsplash(unsplash(url), theme, w, h);
                 for (Sources.Found f : found) {
                     if (cancelled || known.contains(f.picture.id) || !save(f.picture, dir)) continue;
                     known.add(f.picture.id);
-                    // Unsplash asks to be told when one of its photos is used.
-                    if (mayAskUnsplash()) unsplash(f.ping);
                 }
             } catch (Exception e) {
                 if (!cancelled) Log.w(TAG, "no new " + theme + " from unsplash: " + e);
             }
         }
+    }
+
+    // Unsplash asks to be told when one of its photos is used: sent once, the first time a downloaded
+    // photo is shown, in the background, and only while there's room under the hourly limit.
+    void pingShown(final Picture p) {
+        if (p == null || !p.fresh || !p.id.startsWith("us:") || Keys.UNSPLASH.isEmpty()) return;
+        final String id = p.id.substring(3);
+        final Set<String> pinged = new HashSet<>(java.util.Arrays.asList(prefs.getString("pinged", "").split(",")));
+        if (pinged.contains(id) || !mayAskUnsplash()) return;
+        pinged.add(id);
+        List<String> keep = new ArrayList<>(pinged);
+        prefs.edit().putString("pinged", android.text.TextUtils.join(",", keep.subList(Math.max(0, keep.size() - 300), keep.size()))).apply();
+        Thread t = new Thread(() -> {
+            try { unsplash("https://api.unsplash.com/photos/" + id + "/download"); }
+            catch (Exception e) { Log.w(TAG, "couldn't tell Unsplash about " + p.id + ": " + e); }
+        }, "tvhome-unsplash-ping");
+        t.setPriority(Thread.MIN_PRIORITY);
+        t.start();
     }
 
     private boolean mayAskUnsplash() {
