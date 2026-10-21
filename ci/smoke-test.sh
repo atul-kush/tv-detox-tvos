@@ -28,7 +28,9 @@ wait_home || fail "home screen not in front"
 
 echo "== home screen shows a clock and Settings"
 x=$(ui)
-echo "$x" | grep -q 'text="Settings"' || fail "no Settings tile"
+# The Settings tile shows its name as text (basic home screen) or, when it has the TV's own artwork,
+# only as its description (tvOS-style home screen).
+echo "$x" | grep -qE '(text|content-desc)="Settings"' || fail "no Settings tile"
 echo "$x" | grep -qE 'text="[0-9]{1,2}:[0-9]{2}"' || fail "no clock"
 tiles=$(echo "$x" | grep -o 'focusable="true"' | wc -l | tr -d ' ')
 echo "   $tiles tiles"
